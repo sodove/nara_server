@@ -10,6 +10,9 @@ class ListsController {
 //        ListsModel.insert(listsDTO)
 //    }
 
+    fun getAll(): List<ListsDTO> {
+        return ListsModel.getAll()
+    }
     fun update(listsDTO: ListsDTO) {
         ListsModel.update(listsDTO)
     }
