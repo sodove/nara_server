@@ -42,4 +42,4 @@ Example response with schedulaStyle disabled: [Click](https://pastebin.com/b3fEC
 - [X] Deleting a schedule if it was added more than two weeks ago
 - [ ] Do little things in a normal way (at least try)
 - [ ] Additional schedule source via parsing university website
-- [ ] Main page with statictics
+- [ ] Main page with statistics
