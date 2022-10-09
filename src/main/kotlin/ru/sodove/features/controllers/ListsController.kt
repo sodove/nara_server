@@ -2,6 +2,7 @@ package ru.sodove.features.controllers
 
 import ru.sodove.database.dto.ListsDTO
 import ru.sodove.database.models.ListsModel
+import ru.sodove.utilities.schedulaComparator
 import java.time.Instant
 
 class ListsController {
@@ -11,7 +12,8 @@ class ListsController {
 //    }
 
     fun getAll(): List<ListsDTO> {
-        return ListsModel.getAll()
+        val list = ListsModel.getAll()
+        return list.sortedWith(schedulaComparator)
     }
     fun update(listsDTO: ListsDTO) {
         ListsModel.update(listsDTO)

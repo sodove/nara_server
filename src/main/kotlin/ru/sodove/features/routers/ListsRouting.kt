@@ -49,7 +49,7 @@ fun Application.configureListsRouting() {
     }
 
     routing {
-        get("/api/v1/auds") {
+        get("/api/v1/auds/") {
             try {
                 if (call.request.queryParameters["id"] != null) {
                     val id = call.request.queryParameters["id"]!!.toInt()
