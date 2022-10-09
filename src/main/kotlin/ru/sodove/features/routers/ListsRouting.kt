@@ -68,7 +68,7 @@ fun Application.configureListsRouting() {
     }
 
     routing {
-        get ( "/api/v1/lists" ) {
+        get ( "/api/v1/lists/" ) {
             try {
                 call.respond(ListsController().getAll())
             }

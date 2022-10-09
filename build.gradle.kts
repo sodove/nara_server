@@ -20,6 +20,12 @@ application {
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
+ktor {
+    fatJar {
+        archiveFileName.set("schedula.jar")
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -32,6 +38,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-gson-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-freemarker:$ktor_version")
     implementation("io.ktor:ktor-server-cio-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
 
     implementation("io.ktor:ktor-client-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-client-gson-jvm:$ktor_version")
@@ -41,6 +48,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio-jvm:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
     implementation("io.javalin:javalin:5.0.1")
+    implementation("io.github.cdimascio:dotenv-kotlin:6.3.1")
 
     implementation("org.postgresql:postgresql:$postgresql_version")
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")

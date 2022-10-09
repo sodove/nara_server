@@ -1,7 +1,8 @@
 package ru.sodove
 
-import io.ktor.server.cio.*
+import io.github.cdimascio.dotenv.dotenv
 import io.ktor.server.engine.*
+import io.ktor.server.netty.*
 import org.jetbrains.exposed.sql.Database
 import ru.sodove.features.routers.configureListsRouting
 import ru.sodove.features.routers.configureScheduleRouting
@@ -14,10 +15,20 @@ import ru.sodove.utilities.updateScheduleLists
 import ru.sodove.utilities.updateSchedulesJSON
 
 fun main() {
-    Database.connect("jdbc:postgresql://localhost:5432/schedula", driver = "org.postgresql.Driver",
-        user = "postgres", password = "password")
+    val dotenv = dotenv()
 
-    embeddedServer(CIO, port = 8080, host = "0.0.0.0") {
+    val db_username = dotenv.get("DB_USERNAME")
+    val db_password = dotenv.get("DB_PASSWORD")
+    val db_host = dotenv.get("DB_HOST")
+    val db_name = dotenv.get("DB_NAME")
+    val db_port = dotenv.get("DB_PORT")
+    val server_port = dotenv.get("SERVER_PORT")
+    val server_host = dotenv.get("SERVER_HOST")
+
+    Database.connect("jdbc:postgresql://$db_host:$db_port/$db_name", driver = "org.postgresql.Driver",
+        user = db_username, password = db_password)
+
+    embeddedServer(Netty, port = server_port.toInt(), host = server_host, watchPaths = listOf("classes")) {
         configureHTTP()
         configureSerialization()
         configureRouting()
