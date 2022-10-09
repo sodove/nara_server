@@ -46,7 +46,7 @@ object ListsModel : Table("lists") {
 
     fun getAll() : List<ListsDTO> {
         return transaction {
-            ListsModel.selectAll().orderBy(type_).orderBy(data_).map {
+            ListsModel.selectAll().orderBy(type_).map {
                 ListsDTO(
                     id = it[id_],
                     data = it[data_],
