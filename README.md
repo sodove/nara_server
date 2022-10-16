@@ -30,7 +30,7 @@ Example response:
 
 http://servername:port/api/v1/schedule/
 
-(?schedulaStyle=boolean - style, ?type=value(&schedulaStyle=boolean), ?type=value&id=value(&schedulaStyle=boolean) - filter)
+(?schedulaStyle=boolean - style, ?type=value(&schedulaStyle=boolean), ?type=value&id=value(&schedulaStyle=boolean or &ical=true) - filter)
 
 Example response with schedulaStyle enabled: [Click](https://pastebin.com/ycrj1Uae)
 
