@@ -7,9 +7,9 @@ Simple REST API for RSVPU schedule :shipit:
 
 • Create new database with next commands: [Click](https://pastebin.com/j5AXzM8Y)
 
-• Change the login details in the code (later it will be done in the normal way)
+• Change credentials in dotenv
 
-• Compile and use it on your webserver :trollface:
+• Compile and use it on your webserver (ready to go build will be available later) :trollface:
 
 ## Usage
 
