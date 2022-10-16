@@ -23,8 +23,13 @@ fun Application.configureScheduleRouting() {
                     val type = queryParams["type"]!!
                     if (queryParams["id"] != null) {
                         val id = queryParams["id"]!!.toInt()
+                        if (queryParams["ical"] == null) {
                         val schedule = ScheduleController().getScheduleByTypeAndId(id = id, type = type, schedulaStyle = schedulaStyle)
-                        call.respond(schedule)
+                        call.respond(schedule)} else {
+                            val schedule = ScheduleController().getScheduleByTypeAndId(id = id, type = type, schedulaStyle = false)
+                            val ical = ScheduleController().getIcal(schedule as ScheduleDTO)
+                            call.respondText(ical, contentType = io.ktor.http.ContentType.Text.Plain)
+                        }
                     } else {
                         val schedules = ScheduleController().getSchedulesByType(type, schedulaStyle = schedulaStyle)
                         call.respond(schedules)

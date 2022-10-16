@@ -40,7 +40,7 @@ Example response with schedulaStyle disabled: [Click](https://pastebin.com/b3fEC
 - [X] Lists & Schedule auto updater
 - [X] The API functionality is wider and more convenient to use than the University API :trollface:
 - [X] Deleting a schedule if it was added more than two weeks ago
-- [ ] iCal generator
-- [ ] Do little things in a normal way (at least try)
+- [X] iCal generator
+- [X] Do little things in a normal way (at least try)
 - [ ] Additional schedule source via parsing university website
 - [ ] Main page with statistics

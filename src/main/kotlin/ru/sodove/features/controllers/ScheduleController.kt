@@ -4,7 +4,9 @@ import ru.sodove.database.dataclasses.schedule_jsonItem
 import ru.sodove.database.dto.SchedulaStyleDTO
 import ru.sodove.database.dto.ScheduleDTO
 import ru.sodove.database.models.ScheduleModel
+import java.text.SimpleDateFormat
 import java.time.Instant
+import java.util.*
 
 class ScheduleController {
     fun getSchedules(schedulaStyle: Boolean): List<Any> { //List<ScheduleDTO> or List<SchedulaStyleDTO>
@@ -92,4 +94,63 @@ class ScheduleController {
         ScheduleModel.update(scheduleDTO)
     }
 
+    fun getIcal(schedule: ScheduleDTO): String {
+        val ical = StringBuilder()
+        ical.append("BEGIN:VCALENDAR\r\n" +
+                "VERSION:2.0\r\n" +
+                "PRODID:-//sodove//NaraAPI//schedula one love!//EN\r\n" +
+                "CALSCALE:GREGORIAN\r\n" +
+                "METHOD:PUBLISH\r\n" +
+                "X-WR-CALNAME:Schedula\r\n" +
+                "X-WR-TIMEZONE:Asia/Yekaterinburg\r\n" +
+                "X-WR-CALDESC:Расписание занятий\r\n" +
+                "BEGIN:VTIMEZONE\r\n" +
+                "TZID:Asia/Yekaterinburg\r\n" +
+                "X-LIC-LOCATION:Asia/Yekaterinburg\r\n" +
+                "BEGIN:DAYLIGHT\r\n" +
+                "TZOFFSETFROM:+0300\r\n" +
+                "TZOFFSETTO:+0400\r\n" +
+                "TZNAME:YEKT\r\n" +
+                "DTSTART:19700329T020000\r\n" +
+                "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU\r\n" +
+                "END:DAYLIGHT\r\n" +
+                "BEGIN:STANDARD\r\n" +
+                "TZOFFSETFROM:+0500\r\n" +
+                "TZOFFSETTO:+0500\r\n" +
+                "TZNAME:YEKT\r\n" +
+                "DTSTART:19701025T030000\r\n" +
+                "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU\r\n" +
+                "END:STANDARD\r\n" +
+                "END:VTIMEZONE\r\n")
+
+        schedule.data_.forEach { lesson ->
+            //parse lesson.time as calendar and after add 95 minutes to it
+            val sdf = SimpleDateFormat("HH:mm", Locale("ru"))
+            val lessonTime = sdf.parse(lesson.time)
+            val calendar = Calendar.getInstance()
+            calendar.time = lessonTime
+            calendar.add(Calendar.MINUTE, 95)
+            val time_end = sdf.format(calendar.time).toString().replace(":", "") + "00"
+            val time_start = lesson.time?.replace(":", "") + "00"
+            val dateArray = lesson.date?.split(".")
+            val date = dateArray?.get(2) + dateArray?.get(1) + dateArray?.get(0)
+            val uid = date + time_start + (lesson.content?.aud ?: "") + (lesson.content?.disciplina
+                ?: "") + (lesson.content?.lecturer ?: "")
+
+            ical.append("BEGIN:VEVENT\r\n" +
+                    "UID:$uid\r\n" +
+                    "DTSTAMP:${date}T${time_start}Z\r\n" +
+                    "DTSTART;TZID=Asia/Yekaterinburg:${date}T${time_start}\r\n" +
+                    "DTEND;TZID=Asia/Yekaterinburg:${date}T${time_end}\r\n" +
+                    "SUMMARY:${lesson.content?.disciplina}\r\n" +
+                    "DESCRIPTION:${lesson.content?.lecturer}\r\n" +
+                    "LOCATION:${lesson.content?.aud}\r\n" +
+                    "ORGANIZER;CN=rsvpu via nara api:mailto:mail@rsvpu.ru\r\n" +
+                    "END:VEVENT\r\n")
+
+        }
+
+        ical.append("END:VCALENDAR")
+        return ical.toString()
+    }
 }
