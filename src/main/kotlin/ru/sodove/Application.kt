@@ -35,8 +35,8 @@ fun main() {
         configureListsRouting()
         configureScheduleRouting()
         prepareInMemoryCache()
-        startPeriodicTask(func = ::updateScheduleLists, delay = 1 * 60 * 60000, delay_start = false)
-        startPeriodicTask(func = ::updateSchedulesJSON, delay = 10 * 60000, delay_start = false)
+        startPeriodicTask(func = ::updateScheduleLists, delay = 2 * 60 * 60000, delay_start = false)
+        startPeriodicTask(func = ::updateSchedulesJSON, delay = 30 * 60000, delay_start = false)
     }.start(wait = true)
 }
 

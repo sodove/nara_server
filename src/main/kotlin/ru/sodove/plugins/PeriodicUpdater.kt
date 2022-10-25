@@ -12,7 +12,12 @@ fun Application.startPeriodicTask(func: KSuspendFunction0<Unit>, delay: Long, de
     CoroutineScope(Dispatchers.IO).launch {
         if (delay_start)
             delay(delay_start_length)
-        func()
+        try {
+            func()
+        }
+        catch (e: Exception) {
+            log.error("Error in periodic task: $e")
+        }
         delay(delay)
         startPeriodicTask(func, delay, delay_start)
     }
