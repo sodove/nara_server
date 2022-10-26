@@ -13,7 +13,6 @@ import ru.sodove.database.dataclasses.schedule_json
 import ru.sodove.database.dto.ScheduleDTO
 import ru.sodove.features.controllers.*
 import java.time.Instant
-import kotlin.random.Random
 
 suspend fun Application.updateScheduleLists() {
     log.info("Removing old schedule lists")
@@ -102,7 +101,7 @@ suspend fun Application.updateSchedulesJSON() {
         prepareInMemoryCache()
     }
 
-    val apiLink = "https://rsvpu.ru/contents/api/rasp.php?"
+    val apiLink = "http://forum.rsvpu.ru/contents/api/rasp.php?"
     val client = HttpClient()
     log.info("Downloading schedules...")
 
@@ -116,17 +115,17 @@ suspend fun Application.updateSchedulesJSON() {
 
     for (v_gru in grus) {
         updateScheduleInDB(apiLink, v_gru.key, "v_gru", client)
-        delay(Random.nextLong(2500, 6000))
+        //delay(Random.nextLong(2500, 6000))
     }
 
     for (v_prep in preps) {
         updateScheduleInDB(apiLink, v_prep.key, "v_prep", client)
-        delay(Random.nextLong(2500, 6000))
+        //delay(Random.nextLong(2500, 6000))
     }
 
     for (v_aud in auds) {
         updateScheduleInDB(apiLink, v_aud.key, "v_aud", client)
-        delay(Random.nextLong(2500, 6000))
+        //delay(Random.nextLong(2500, 6000))
     }
     log.info("Downloading schedules... Done")
 }
