@@ -6,6 +6,7 @@ import org.jetbrains.exposed.sql.javatime.timestamp
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.sodove.database.dataclasses.schedule_json
 import ru.sodove.database.dto.ScheduleDTO
+import ru.sodove.utilities.SchedulaUtilities.Companion.printer
 import ru.sodove.utilities.jsonb
 import java.time.Instant
 
@@ -24,6 +25,7 @@ object ScheduleModel : Table("schedule")  {
                 it[last_update_] = scheduleDTO.last_update_
             }
         }
+        printer("Schedule for ${scheduleDTO.id_} ${scheduleDTO.type_} inserted")
     }
 
 //    not used rn
@@ -73,6 +75,15 @@ object ScheduleModel : Table("schedule")  {
                         it[last_update_] = scheduleDTO.last_update_
                     }
                 }
+                printer("Updated schedule for ${scheduleDTO.type_} ${scheduleDTO.id_}")
+            }
+            else if (schedule.data_ == scheduleDTO.data_) {
+                transaction {
+                    ScheduleModel.update({ (id_ eq scheduleDTO.id_) and (type_ eq scheduleDTO.type_) }) {
+                        it[last_update_] = scheduleDTO.last_update_
+                    }
+                }
+                printer("Schedule for ${scheduleDTO.type_} ${scheduleDTO.id_} is up to date, last_update updated")
             }
         }
         catch (e: NoSuchElementException) {

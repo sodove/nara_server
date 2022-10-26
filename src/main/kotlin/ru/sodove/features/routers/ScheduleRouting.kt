@@ -7,12 +7,14 @@ import ru.sodove.database.dataclasses.schedule_json
 import ru.sodove.database.dto.ScheduleDTO
 import ru.sodove.features.controllers.ScheduleController
 import ru.sodove.utilities.RoutingException
+import ru.sodove.utilities.SchedulaUtilities.Companion.printer
 import ru.sodove.utilities.schedulaExceptionHandler
 import java.time.Instant
 
 fun Application.configureScheduleRouting() {
     routing {
         get("/api/v1/schedule/") {
+            var callString = "GET /api/v1/schedule/"
             val queryParams = call.request.queryParameters
             val schedulaStyle = queryParams["schedulaStyle"]?.toBoolean() ?: false
             try {
@@ -24,15 +26,19 @@ fun Application.configureScheduleRouting() {
                     if (queryParams["id"] != null) {
                         val id = queryParams["id"]!!.toInt()
                         if (queryParams["ical"] == null) {
-                        val schedule = ScheduleController().getScheduleByTypeAndId(id = id, type = type, schedulaStyle = schedulaStyle)
-                        call.respond(schedule)} else {
+                            val schedule = ScheduleController().getScheduleByTypeAndId(id = id, type = type, schedulaStyle = schedulaStyle)
+                            call.respond(schedule)
+                            callString += "?type=$type&id=$id"
+                        } else {
                             val schedule = ScheduleController().getScheduleByTypeAndId(id = id, type = type, schedulaStyle = false)
                             val ical = ScheduleController().getIcal(schedule as ScheduleDTO)
                             call.respondText(ical, contentType = io.ktor.http.ContentType.Text.Plain)
+                            callString += "?type=$type&id=$id&ical=true"
                         }
                     } else {
                         val schedules = ScheduleController().getSchedulesByType(type, schedulaStyle = schedulaStyle)
                         call.respond(schedules)
+                        callString += "?type=$type"
                     }
                 } else {
                     val schedules = ScheduleController().getSchedules(schedulaStyle = schedulaStyle)
@@ -46,6 +52,7 @@ fun Application.configureScheduleRouting() {
                             ?.let { it2 -> call.respond(it2) }
                 schedulaExceptionHandler(e, call)
             }
+            printer(callString)
         }
     }
 }

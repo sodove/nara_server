@@ -4,6 +4,7 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.javatime.timestamp
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.sodove.database.dto.ListsDTO
+import ru.sodove.utilities.SchedulaUtilities.Companion.printer
 import java.time.Instant
 
 object ListsModel : Table("lists") {
@@ -21,6 +22,7 @@ object ListsModel : Table("lists") {
                 it[last_update_] = listsDTO.last_update
             }
         }
+        printer("List for ${listsDTO.id} ${listsDTO.type} (${listsDTO.data}) inserted")
     }
 
 //    not used rn
@@ -126,6 +128,15 @@ object ListsModel : Table("lists") {
                         it[last_update_] = listsDTO.last_update
                     }
                 }
+                printer("Data for ${listsDTO.type} with id ${listsDTO.id} updated")
+            }
+            else if (schedule.id == listsDTO.id && schedule.type == listsDTO.type) {
+                transaction {
+                    ListsModel.update({ (id_ eq schedule.id) and (type_ eq schedule.type) }) {
+                        it[last_update_] = listsDTO.last_update
+                    }
+                }
+                printer("List for ${listsDTO.type} with id ${listsDTO.id} is up to date, last_update updated")
             }
         }
         catch (e: NoSuchElementException) {

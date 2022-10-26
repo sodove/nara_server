@@ -25,10 +25,10 @@ class ListsController {
     }
 
     fun updateLists(grus: LinkedHashMap<Int, String>, preps: LinkedHashMap<Int, String>, auds: LinkedHashMap<Int, String>) {
-        val last_update = Instant.now()
-        grus.forEach { update(ListsDTO(id = it.key, data = it.value, type = "v_gru", last_update = last_update)) }
-        preps.forEach { update(ListsDTO(id = it.key, data = it.value, type = "v_prep", last_update = last_update)) }
-        auds.forEach { update(ListsDTO(id = it.key, data = it.value, type = "v_aud", last_update = last_update)) }
+        val lastUpdate = Instant.now()
+        grus.forEach { update(ListsDTO(id = it.key, data = it.value, type = "v_gru", last_update = lastUpdate)) }
+        preps.forEach { update(ListsDTO(id = it.key, data = it.value, type = "v_prep", last_update = lastUpdate)) }
+        auds.forEach { update(ListsDTO(id = it.key, data = it.value, type = "v_aud", last_update = lastUpdate)) }
     }
 
 //    not used rn

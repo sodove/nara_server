@@ -75,17 +75,37 @@ suspend fun Application.updateScheduleLists() {
     log.info("Schedule lists size (preps): ${preps.size}")
     log.info("Schedule lists size (auds): ${auds.size}")
     prepareInMemoryCache()
-    //if grus is not empty, then save to database
+
     if (grus.isNotEmpty() && preps.isNotEmpty() && auds.isNotEmpty()) {
-        if (grus != InMemoryCache.grus || preps != InMemoryCache.preps || auds != InMemoryCache.auds) {
-            log.info("Schedule lists changed, updating database...")
-            ListsController().updateLists(grus, preps, auds)
-            log.info("Schedule lists changed, updating database... Done")
-            prepareInMemoryCache()
+        val downloadedSortedGrus = grus.toList().sortedBy { (key, _) -> key }.toMap()
+        val downloadedSortedPreps = preps.toList().sortedBy { (key, _) -> key }.toMap()
+        val downloadedSortedAuds = auds.toList().sortedBy { (key, _) -> key }.toMap()
+        val inMemorySortedGrus = InMemoryCache.grus.toList().sortedBy { (key, _) -> key }.toMap()
+        val inMemorySortedPreps = InMemoryCache.preps.toList().sortedBy { (key, _) -> key }.toMap()
+        val inMemorySortedAuds = InMemoryCache.auds.toList().sortedBy { (key, _) -> key }.toMap()
+
+        // show differences between downloaded and in-memory lists
+        if (downloadedSortedGrus != inMemorySortedGrus) {
+            log.info("Grus lists are different")
+            log.info("Downloaded grus: $downloadedSortedGrus")
+            log.info("In-memory grus: $inMemorySortedGrus")
         }
-        else {
-            log.info("Schedule lists are up to date")
+        if (downloadedSortedPreps != inMemorySortedPreps) {
+            log.info("Preps lists are different")
+            log.info("Downloaded preps: $downloadedSortedPreps")
+            log.info("In-memory preps: $inMemorySortedPreps")
         }
+        if (downloadedSortedAuds != inMemorySortedAuds) {
+            log.info("Auds lists are different")
+            log.info("Downloaded auds: $downloadedSortedAuds")
+            log.info("In-memory auds: $inMemorySortedAuds")
+        }
+
+
+        log.info("Updating database...")
+        ListsController().updateLists(grus, preps, auds)
+        log.info("Updating database... Done")
+        prepareInMemoryCache()
     }
     client.close()
 
