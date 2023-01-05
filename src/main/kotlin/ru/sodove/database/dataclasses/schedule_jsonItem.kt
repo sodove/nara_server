@@ -8,5 +8,5 @@ data class schedule_jsonItem(
     @SerializedName("time"      ) var time      : String?  = null,
     @SerializedName("lesson"    ) var lesson    : Int?     = null,
     @SerializedName("timetable" ) var timetable : String?  = null,
-    @SerializedName("content"   ) var content   : Content? = Content()
+    @SerializedName("content"   ) var content   : Content = Content()
 )

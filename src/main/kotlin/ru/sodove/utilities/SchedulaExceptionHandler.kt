@@ -3,7 +3,7 @@ package ru.sodove.utilities
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 
-class RoutingException(message:String): Exception(message)
+class RoutingException(message: String) : Exception(message)
 
 suspend fun schedulaExceptionHandler(e: Exception, call: ApplicationCall) {
     when (e) {

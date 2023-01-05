@@ -7,89 +7,71 @@ import ru.sodove.features.controllers.AudsController
 import ru.sodove.features.controllers.GroupsController
 import ru.sodove.features.controllers.ListsController
 import ru.sodove.features.controllers.PrepsController
-import ru.sodove.utilities.SchedulaUtilities.Companion.printer
 import ru.sodove.utilities.schedulaExceptionHandler
 
 fun Application.configureListsRouting() {
     routing {
         get("/api/v1/groups/") {
-            var callString = "GET /api/v1/groups/"
             try {
                 if (call.request.queryParameters["id"] != null) {
                     val id = call.request.queryParameters["id"]!!.toInt()
                     call.respond(GroupsController().getFiltered(id))
-                    callString += "?id=$id"
                 } else if (call.request.queryParameters["data"] != null) {
                     val name = call.request.queryParameters["data"]!!
                     call.respond(GroupsController().getFiltered(name))
-                    callString += "?data=$name"
                 } else {
                     call.respond(GroupsController().getAll())
 
                 }
-            }
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 schedulaExceptionHandler(e, call)
             }
-            printer(callString)
         }
     }
 
     routing {
-        get ( "/api/v1/preps/" ) {
-            var callString = "GET /api/v1/preps/"
+        get("/api/v1/preps/") {
             try {
                 if (call.request.queryParameters["id"] != null) {
                     val id = call.request.queryParameters["id"]!!.toInt()
                     call.respond(PrepsController().getFiltered(id))
-                    callString += "?id=$id"
                 } else if (call.request.queryParameters["data"] != null) {
                     val name = call.request.queryParameters["data"]!!
                     call.respond(PrepsController().getFiltered(name))
-                    callString += "?data=$name"
                 } else {
                     call.respond(PrepsController().getAll())
                 }
-            }
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 schedulaExceptionHandler(e, call)
             }
-            printer(callString)
         }
     }
 
     routing {
         get("/api/v1/auds/") {
-            var callString = "GET /api/v1/auds/"
             try {
                 if (call.request.queryParameters["id"] != null) {
                     val id = call.request.queryParameters["id"]!!.toInt()
                     call.respond(AudsController().getFiltered(id))
-                    callString += "?id=$id"
                 } else if (call.request.queryParameters["data"] != null) {
                     val name = call.request.queryParameters["data"]!!
                     call.respond(AudsController().getFiltered(name))
-                    callString += "?data=$name"
                 } else {
                     call.respond(AudsController().getAll())
                 }
-            }
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 schedulaExceptionHandler(e, call)
             }
-            printer(callString)
         }
     }
 
     routing {
-        get ( "/api/v1/lists/" ) {
+        get("/api/v1/lists/") {
             try {
                 call.respond(ListsController().getAll())
-            }
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 schedulaExceptionHandler(e, call)
             }
-            printer("GET /api/v1/lists/")
         }
     }
 }

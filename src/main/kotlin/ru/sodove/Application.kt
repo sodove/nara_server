@@ -10,6 +10,7 @@ import ru.sodove.plugins.configureHTTP
 import ru.sodove.plugins.configureRouting
 import ru.sodove.plugins.configureSerialization
 import ru.sodove.plugins.startPeriodicTask
+import ru.sodove.utilities.FirebaseTools
 import ru.sodove.utilities.prepareInMemoryCache
 import ru.sodove.utilities.updateScheduleLists
 import ru.sodove.utilities.updateSchedulesJSON
@@ -17,18 +18,24 @@ import ru.sodove.utilities.updateSchedulesJSON
 fun main() {
     val dotenv = dotenv()
 
-    val db_username = dotenv.get("DB_USERNAME")
-    val db_password = dotenv.get("DB_PASSWORD")
-    val db_host = dotenv.get("DB_HOST")
-    val db_name = dotenv.get("DB_NAME")
-    val db_port = dotenv.get("DB_PORT")
-    val server_port = dotenv.get("SERVER_PORT")
-    val server_host = dotenv.get("SERVER_HOST")
+    val dbUsername = dotenv.get("DB_USERNAME")
+    val dbPassword = dotenv.get("DB_PASSWORD")
+    val dbHost = dotenv.get("DB_HOST")
+    val dbName = dotenv.get("DB_NAME")
+    val dbPort = dotenv.get("DB_PORT")
+    val serverPort = dotenv.get("SERVER_PORT")
+    val serverHost = dotenv.get("SERVER_HOST")
 
-    Database.connect("jdbc:postgresql://$db_host:$db_port/$db_name", driver = "org.postgresql.Driver",
-        user = db_username, password = db_password)
+    FirebaseTools.initializeFirebase()
+//    FirebaseTools.createFirebaseRequest(4405, "v_gru")
+//    FirebaseTools.createFirebaseRequest(message = "Hello World", topic = "updates")
 
-    embeddedServer(Netty, port = server_port.toInt(), host = server_host, watchPaths = listOf("classes")) {
+    Database.connect(
+        "jdbc:postgresql://$dbHost:$dbPort/$dbName", driver = "org.postgresql.Driver",
+        user = dbUsername, password = dbPassword
+    )
+
+    embeddedServer(Netty, port = serverPort.toInt(), host = serverHost, watchPaths = listOf("classes")) {
         configureHTTP()
         configureSerialization()
         configureRouting()
@@ -38,6 +45,8 @@ fun main() {
         startPeriodicTask(func = ::updateScheduleLists, delay = 2 * 60 * 60000, delay_start = false)
         startPeriodicTask(func = ::updateSchedulesJSON, delay = 30 * 60000, delay_start = false)
     }.start(wait = true)
+
+
 }
 
 

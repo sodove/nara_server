@@ -12,4 +12,21 @@
     <logger name="Exposed" level="warn" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>naralog_.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>naralog_%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %msg%n</pattern>
+        </encoder>
+    </appender>
+
+
+    <root level="trace">
+        <appender-ref ref="FILE"/>
+    </root>
 </configuration>

@@ -1,34 +1,63 @@
 package ru.sodove.features.controllers
 
+import ru.sodove.cache.InMemoryCache
 import ru.sodove.database.dataclasses.schedule_jsonItem
 import ru.sodove.database.dto.SchedulaStyleDTO
 import ru.sodove.database.dto.ScheduleDTO
 import ru.sodove.database.models.ScheduleModel
+import ru.sodove.utilities.SchedulaUtilities.Companion.getFromOriginalApi
+import ru.sodove.utilities.SchedulaUtilities.Companion.printer
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.*
 
 class ScheduleController {
-    fun getSchedules(schedulaStyle: Boolean): List<Any> { //List<ScheduleDTO> or List<SchedulaStyleDTO>
-        return if (schedulaStyle) {
+    fun getSchedules(schedulaStyle: Boolean, allowCache: Boolean = false): List<Any> { //List<ScheduleDTO> or List<SchedulaStyleDTO>
+        if (schedulaStyle) {
+            if (allowCache) {
+                printer("Getting schedules from cache")
+                return InMemoryCache.scheduleMap
+            }
+
             val schedules = ScheduleModel.getSchedule()
             val schedulaList = ArrayList<SchedulaStyleDTO>()
 
             schedules.forEach{ scheduleDTO ->
                 schedulaList.add(convertDTO(scheduleDTO))
             }
-            schedulaList
+            return schedulaList
         } else {
-            ScheduleModel.getSchedule()
+            return ScheduleModel.getSchedule()
         }
     }
 
-    fun getScheduleByTypeAndId(id: Int, type: String, schedulaStyle: Boolean): Any { //ScheduleDTO or SchedulaStyleDTO
+    fun getScheduleByTypeAndId(id: Int, type: String, schedulaStyle: Boolean, allowCache: Boolean = false): Any { //ScheduleDTO or SchedulaStyleDTO
         return if (schedulaStyle) {
-            val scheduleLessons = ScheduleModel.getScheduleByTypeAndId(id, type)
-            convertDTO(scheduleLessons)
+            val fromCache = if (allowCache) checkIsAvailableInCache(id, type) else null
+            if (fromCache != null) {
+                printer("Schedule for $id $type found in cache")
+                fromCache
+            } else {
+                val scheduleDTO = ScheduleModel.getScheduleByTypeAndId(id, type)
+                convertDTO(scheduleDTO)
+            }
         } else {
             ScheduleModel.getScheduleByTypeAndId(id, type)
+        }
+    }
+
+    suspend fun getScheduleByTypeAndIdAndDate(id: Int, type: String, schedulaStyle: Boolean, dateStart: String, dateEnd: String): Any {
+        val schedule = getFromOriginalApi(id = id.toString(), type = type, dateStart = dateStart, dateEnd = dateEnd)
+        return if (schedulaStyle) convertDTO(schedule)
+        else schedule
+    }
+
+    private fun checkIsAvailableInCache(id: Int, type: String) : SchedulaStyleDTO? {
+        val cacheList = InMemoryCache.scheduleMap
+        return try {
+            cacheList.first { it.id_ == id && it.type_ == type }
+        } catch (e: NoSuchElementException) {
+            null
         }
     }
 
@@ -44,35 +73,6 @@ class ScheduleController {
         } else {
             ScheduleModel.getSchedule().filter { it.type_ == type }
         }
-    }
-
-    private fun convertDTO(scheduleDTO: ScheduleDTO) : SchedulaStyleDTO {
-        val scheduleDateTable: MutableList<List<schedule_jsonItem>> = ArrayList()
-
-        var scheduleDate = scheduleDTO.data_[0].date
-        var scheduleContent: MutableList<schedule_jsonItem> = ArrayList()
-
-        for (lesson in scheduleDTO.data_) {
-            val scheduleDateCycle = lesson.date
-
-            if (scheduleDate != scheduleDateCycle) {
-                scheduleDateTable.add(scheduleContent)
-                scheduleContent = ArrayList()
-                scheduleDate = scheduleDateCycle
-            }
-
-            scheduleContent.add(lesson)
-            if (lesson === scheduleDTO.data_[scheduleDTO.data_.size - 1])
-                scheduleDateTable.add(scheduleContent)
-        }
-
-        val schedulaStyleDTO = SchedulaStyleDTO()
-        schedulaStyleDTO.id_ = scheduleDTO.id_
-        schedulaStyleDTO.type_ = scheduleDTO.type_
-        schedulaStyleDTO.last_update_ = scheduleDTO.last_update_
-        schedulaStyleDTO.data_ = scheduleDateTable
-
-        return schedulaStyleDTO
     }
 
     //remove lists where last_update < 2 weeks
@@ -152,5 +152,37 @@ class ScheduleController {
 
         ical.append("END:VCALENDAR")
         return ical.toString()
+    }
+
+    companion object {
+        fun convertDTO(scheduleDTO: ScheduleDTO): SchedulaStyleDTO {
+            val scheduleDateTable: MutableList<List<schedule_jsonItem>> = ArrayList()
+
+            var scheduleDate = scheduleDTO.data_[0].date
+            var scheduleContent: MutableList<schedule_jsonItem> = ArrayList()
+
+            for (lesson in scheduleDTO.data_) {
+                val scheduleDateCycle = lesson.date
+
+                if (scheduleDate != scheduleDateCycle) {
+                    scheduleDateTable.add(scheduleContent)
+                    scheduleContent = ArrayList()
+                    scheduleDate = scheduleDateCycle
+                }
+
+                scheduleContent.add(lesson)
+                if (lesson === scheduleDTO.data_[scheduleDTO.data_.size - 1])
+                    scheduleDateTable.add(scheduleContent)
+            }
+
+            val schedulaStyleDTO = SchedulaStyleDTO()
+            schedulaStyleDTO.id_ = scheduleDTO.id_
+            schedulaStyleDTO.type_ = scheduleDTO.type_
+            schedulaStyleDTO.last_update_ = scheduleDTO.last_update_
+            schedulaStyleDTO.data_ = scheduleDateTable
+            schedulaStyleDTO.start_date_ = scheduleDTO.start_date_
+
+            return schedulaStyleDTO
+        }
     }
 }

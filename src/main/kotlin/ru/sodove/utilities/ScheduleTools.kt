@@ -6,12 +6,15 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.server.application.*
+import io.ktor.utils.io.*
 import kotlinx.coroutines.delay
 import org.jsoup.Jsoup
 import ru.sodove.cache.InMemoryCache
 import ru.sodove.database.dataclasses.schedule_json
+import ru.sodove.database.dto.SchedulaStyleDTO
 import ru.sodove.database.dto.ScheduleDTO
 import ru.sodove.features.controllers.*
+import ru.sodove.utilities.SchedulaUtilities.Companion.printer
 import java.time.Instant
 
 suspend fun Application.updateScheduleLists() {
@@ -44,9 +47,11 @@ suspend fun Application.updateScheduleLists() {
                 child.attr("name") == "gr" -> if (child.attr("data") != "") {
                     grus[child.attr("data").toInt()] = child.text()
                 }
+
                 child.attr("name") == "prep" -> if (child.attr("data") != "") {
                     preps[child.attr("data").toInt()] = child.text()
                 }
+
                 child.attr("name") == "aud" -> if (child.attr("data") != "") {
                     auds[child.attr("data").toInt()] = child.text()
                 }
@@ -62,6 +67,7 @@ suspend fun Application.updateScheduleLists() {
                 child.attr("name") == "gr" -> if (child.attr("data") != "") {
                     grus[child.attr("data").toInt()] = child.text()
                 }
+
                 child.attr("name") == "prep" -> {}
                 child.attr("name") == "aud" -> {}
 
@@ -113,6 +119,9 @@ suspend fun Application.updateScheduleLists() {
 }
 
 val scheduleController = ScheduleController()
+var startDateFormatted = ""
+var endDay = ""
+
 suspend fun Application.updateSchedulesJSON() {
 
     while (InMemoryCache.auds.isEmpty() || InMemoryCache.grus.isEmpty() || InMemoryCache.preps.isEmpty() || InMemoryCache.isListsUpdating) {
@@ -124,6 +133,21 @@ suspend fun Application.updateSchedulesJSON() {
     val apiLink = "http://forum.rsvpu.ru/contents/api/rasp.php?"
     val client = HttpClient()
     log.info("Downloading schedules...")
+
+//    val parity = CalendarUtils().getParity()
+
+    // if parity get start of current week, else get start of previous week
+    val startDate = //if (!parity) {
+        CalendarUtils().firstDayOfWeek()
+//    } else {
+//        CalendarUtils().firstDayOfPreviousWeek()
+//    }
+
+
+    startDateFormatted = startDate.format(CalendarUtils.formatter)
+    endDay = startDate.plusDays(27).format(CalendarUtils.formatter)
+    printer("Using $startDateFormatted as start day")
+    printer("Using $endDay as end day")
 
     val grus = InMemoryCache.grus
     val preps = InMemoryCache.preps
@@ -148,23 +172,45 @@ suspend fun Application.updateSchedulesJSON() {
         //delay(Random.nextLong(2500, 6000))
     }
     log.info("Downloading schedules... Done")
+
+    prepareInMemoryCache()
 }
+
 
 suspend fun Application.updateScheduleInDB(link: String, id: Int, type: String, client: HttpClient) {
     try {
-        val response = client.get("$link$type=$id")
+        printer("Downloading schedule for $type $id, start date: $startDateFormatted, end date: $endDay")
+        val response = client.get("$link$type=$id&v_date_start=$startDateFormatted&v_date_end=$endDay")
         val scheduleJson = response.body<String>()
 
         val gson = Gson()
         val schedule = gson.fromJson(scheduleJson, schedule_json::class.java)
 
-        if (schedule.isNotEmpty()){
-            val scheduleDTO = ScheduleDTO(id_ = id, type_ = type, data_ = schedule, last_update_ = Instant.now())
+        // rsvpu I hate you, why are you printing extra spaces and new lines in json?
+        schedule.forEach { data ->
+            data.timetable = data.timetable?.trim()
+            data.content.aud = data.content.aud?.trim()
+            data.content.note = data.content.note?.trim()
+            data.content.disciplina = data.content.disciplina?.trim()
+            data.content.lecturer = data.content.lecturer?.trim()
+            data.content.note = data.content.note?.trim()
+            data.content.subgroupname = data.content.subgroupname?.trim()
+            data.content.typeDisciplina = data.content.typeDisciplina?.trim()
+        }
+
+        if (schedule.isNotEmpty()) {
+            val scheduleDTO = ScheduleDTO(
+                id_ = id,
+                type_ = type,
+                data_ = schedule,
+                last_update_ = Instant.now(),
+                start_date_ = startDateFormatted
+            )
             scheduleController.update(scheduleDTO)
         }
-    }
-    catch (e: Exception) {
+    } catch (e: Exception) {
         log.error("Error while saving schedule to database: ${e.message}")
+        e.printStack()
     }
 }
 
@@ -173,5 +219,7 @@ fun Application.prepareInMemoryCache() {
     InMemoryCache.grus = GroupsController().getAllMap()
     InMemoryCache.preps = PrepsController().getAllMap()
     InMemoryCache.auds = AudsController().getAllMap()
+    InMemoryCache.scheduleMap = ScheduleController().getSchedules(true) as MutableList<SchedulaStyleDTO>
     log.info("Preparing in-memory cache... Done")
 }
+

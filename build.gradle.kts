@@ -34,18 +34,21 @@ dependencies {
     implementation("io.ktor:ktor-server-compression-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-caching-headers-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-call-logging:$ktor_version")
+
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
     implementation("io.ktor:ktor-serialization-gson-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-freemarker:$ktor_version")
     implementation("io.ktor:ktor-server-cio-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
 
-    implementation("io.ktor:ktor-client-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-client-gson-jvm:$ktor_version")
+    implementation("io.ktor:ktor-client-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-client-json-jvm:$ktor_version")
     implementation("io.ktor:ktor-client-serialization-jvm:$ktor_version")
-
     implementation("io.ktor:ktor-client-cio-jvm:$ktor_version")
+
     implementation("ch.qos.logback:logback-classic:$logback_version")
     implementation("io.javalin:javalin:5.0.1")
     implementation("io.github.cdimascio:dotenv-kotlin:6.3.1")
@@ -56,6 +59,10 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-java-time:$exposed_version")
 
-    implementation("com.google.code.gson:gson:2.9.0")
+    implementation("com.google.code.gson:gson:2.10")
     implementation("org.jsoup:jsoup:1.15.3")
+
+    implementation("com.google.firebase:firebase-admin:9.1.0")
+
+
 }
